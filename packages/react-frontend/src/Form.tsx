@@ -5,7 +5,6 @@ type Person = {
   job: string;
 };
 type FormProps = {
-  updateList: (input: Person) => void;
   handleSubmit: (input: Person) => void;
 };
 
@@ -25,7 +24,6 @@ function Form(props: FormProps) {
     props.handleSubmit(person);
     setPerson({ name: " ", job: " " });
   }
-
   return (
     <form>
       <label htmlFor="name">Name</label>

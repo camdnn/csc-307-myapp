@@ -18,7 +18,7 @@ function MyApp() {
     setCharacters(updated);
   }
 
-  function updateList(person: Person) {
+  function updateList(person: Person): void {
     setCharacters([...characters, person]);
   }
 
