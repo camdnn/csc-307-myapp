@@ -39,6 +39,20 @@ const users = {
     },
   ],
 };
+// =========== READ Operations
+const findUserById = (id: string) => {
+  return users.users_list.find((user) => user["id"] === id);
+};
+
+app.get("/users/:id", (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const result = findUserById(id);
+  if (result === undefined) {
+    res.status(404).send("Resource not found");
+  } else {
+    res.send({ users_list: result });
+  }
+});
 
 const findUserByName = (name: string) => {
   return users["users_list"].filter((user) => user["name"] == name);
@@ -52,6 +66,32 @@ app.get("/users", (req: Request, res: Response) => {
   } else {
     res.send(users);
   }
+});
+
+// ============= CREATE Operations
+interface User {
+  id: string;
+  name: string;
+  job: string;
+}
+
+const addUser = (user: User) => {
+  users["users_list"].push(user);
+  return user;
+};
+
+app.post("/users", (req: Request, res: Response) => {
+  const userToAdd = req.body;
+  addUser(userToAdd);
+  res.send(0);
+});
+
+// ============ DELETE Operations
+
+app.delete("/users/delete/:id", (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  users.users_list = users.users_list.filter((user) => user.id !== id);
+  res.status(200).send(users);
 });
 
 app.listen(PORT, () => {
