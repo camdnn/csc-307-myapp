@@ -104,7 +104,7 @@ app.post("/users", (req: Request, res: Response) => {
 
 // ============ DELETE Operations
 
-app.delete("/users/delete/:id", (req: Request, res: Response) => {
+app.delete("/users/:id", (req: Request, res: Response) => {
   const id = req.params.id as string;
   users.users_list = users.users_list.filter((user) => user.id !== id);
   res.status(200).send(users);
