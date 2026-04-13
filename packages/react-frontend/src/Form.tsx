@@ -4,6 +4,7 @@ type Person = {
   name: string;
   job: string;
 };
+
 type FormProps = {
   handleSubmit: (input: Person) => void;
 };

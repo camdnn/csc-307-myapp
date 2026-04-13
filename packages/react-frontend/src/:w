@@ -22,7 +22,7 @@ type Character = {
 
 type TableBodyProps = {
   characterData: Character[];
-  removeCharacter: (id: string) => void;
+  removeCharacter: (index: number) => void;
 };
 
 function TableBody(props: TableBodyProps) {

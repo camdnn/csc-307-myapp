@@ -3,11 +3,13 @@
 
 import express from "express";
 import type { Request, Response } from "express";
-import type { ParsedUrlQuery } from "querystring";
+import cors from "cors";
+import { stringify } from "querystring";
 
 const app = express();
 const PORT = 8000;
 
+app.use(cors());
 app.use(express.json());
 
 const users = {
@@ -91,15 +93,20 @@ interface User {
   job: string;
 }
 
+const generateId = (max: number): string => {
+  return Math.floor(Math.random() * max).toString();
+};
+
 const addUser = (user: User) => {
+  user.id = generateId(10000);
   users["users_list"].push(user);
   return user;
 };
 
 app.post("/users", (req: Request, res: Response) => {
   const userToAdd = req.body;
-  addUser(userToAdd);
-  res.send(0);
+  const newUser = addUser(userToAdd);
+  res.status(201).send(newUser);
 });
 
 // ============ DELETE Operations
@@ -107,7 +114,7 @@ app.post("/users", (req: Request, res: Response) => {
 app.delete("/users/:id", (req: Request, res: Response) => {
   const id = req.params.id as string;
   users.users_list = users.users_list.filter((user) => user.id !== id);
-  res.status(200).send(users);
+  res.status(204).send();
 });
 
 app.listen(PORT, () => {
