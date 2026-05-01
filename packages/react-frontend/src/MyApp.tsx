@@ -1,10 +1,10 @@
 // src/MyApp.jsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Table from "./Table";
 import Form from "./Form.tsx";
 
 type Person = {
-  id: string;
+  _id: string;
   name: string;
   job: string;
 };
@@ -21,13 +21,13 @@ function MyApp() {
     try {
       fetchUsers()
         .then((res) => res.json())
-        .then((json) => setCharacters(json.users_list));
+        .then((json) => setCharacters(json));
     } catch (e) {
       console.log(e);
     }
   }, []);
 
-  function postUser(person: Person) {
+  function postUser(person: Omit<Person, "_id">) {
     const promise = fetch("http://localhost:8000/users", {
       method: "POST",
       headers: {
@@ -45,15 +45,15 @@ function MyApp() {
 
     promise
       .then((res) => {
-        if (res.status == 204) {
-          const updatedList = characters.filter((user) => user.id !== id);
+        if (res.status == 200) {
+          const updatedList = characters.filter((user) => user._id !== id);
           setCharacters(updatedList);
         }
       })
       .catch((e) => console.log(e));
   }
 
-  function updateList(person: Person): void {
+  function updateList(person: Omit<Person, "_id">): void {
     postUser(person)
       .then((res) => (res.status == 201 ? res.json() : undefined))
       .then((json) => {

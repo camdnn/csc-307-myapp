@@ -1,88 +1,47 @@
 // backend.ts
 //
 
+import "dotenv/config";
 import express from "express";
 import type { Request, Response } from "express";
 import cors from "cors";
-import { stringify } from "querystring";
+import User from "./users.ts"
+import mongoose from "mongoose"
 
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
 
-const users = {
-  users_list: [
-    {
-      id: "xyz789",
-      name: "Charlie",
-      job: "Janitor",
-    },
-    {
-      id: "abc123",
-      name: "Mac",
-      job: "Bouncer",
-    },
-    {
-      id: "ppp222",
-      name: "Mac",
-      job: "Professor",
-    },
-    {
-      id: "yat999",
-      name: "Dee",
-      job: "Aspring actress",
-    },
-    {
-      id: "zap555",
-      name: "Dennis",
-      job: "Bartender",
-    },
-  ],
-};
+mongoose.set("debug", true);
+mongoose.connect("mongodb://localhost:27017/users")
+
 
 // =========== READ Operations
-const findUserById = (id: string) => {
-  return users.users_list.find((user) => user["id"] === id);
-};
-
-app.get("/users/:id", (req: Request, res: Response) => {
-  const id = req.params.id as string;
-  const result = findUserById(id);
-  if (result === undefined) {
-    res.status(404).send("Resource not found");
-  } else {
-    res.send({ users_list: result });
+app.get("/users/:id", async (req: Request, res: Response) => {
+  try {
+    const result = await User.findById(req.params.id);
+    if (!result) {
+      res.status(404).send("Resource not found");
+    } else {
+      res.json(result);
+    }
+  } catch (e) {
+    res.status(500).json({ error: "Error fetching user" });
   }
 });
 
-const findUserByName = (name: string) => {
-  return users.users_list.filter((user) => user.name === name);
-};
-
-const findUserByJob = (job: string) => {
-  return users.users_list.filter((user) => user.job === job);
-};
-
-app.get("/users", (req: Request, res: Response) => {
-  const name = req.query.name as string;
-  const job = req.query.job as string;
-
-  if (name != undefined && job != undefined) {
-    const result = users.users_list.filter((user) => {
-      if (user.name === name && user.job === job) return user;
-    });
-
-    res.send({ users_list: result });
-  } else if (job != undefined) {
-    const result = findUserByJob(job);
-    res.send({ users_list: result });
-  } else if (name != undefined) {
-    const result = findUserByName(name);
-    res.send({ users_list: result });
-  } else {
-    res.send(users);
+app.get("/users", async (req: Request, res: Response) => {
+  try {
+    const { name, job } = req.query as { name?: string; job?: string };
+    const filter: Record<string, string> = {};
+    if (name) filter.name = name;
+    if (job) filter.job = job;
+    const users = await User.find(filter);
+    res.json(users);
+  } catch (e) {
+    res.status(500).json({ error: "Error fetching users" });
   }
 });
 
@@ -93,28 +52,33 @@ interface User {
   job: string;
 }
 
-const generateId = (max: number): string => {
-  return Math.floor(Math.random() * max).toString();
-};
-
-const addUser = (user: User) => {
-  user.id = generateId(10000);
-  users["users_list"].push(user);
-  return user;
-};
-
-app.post("/users", (req: Request, res: Response) => {
-  const userToAdd = req.body;
-  const newUser = addUser(userToAdd);
-  res.status(201).send(newUser);
+app.post("/users", async (req: Request, res: Response) => {
+  try {
+    const userToAdd = new User(req.body);
+    const saved = await userToAdd.save();
+    res.status(201).json(saved);
+  } catch (e) {
+    res.status(500).json({ error: "Failed to add a user" });
+  }
 });
 
 // ============ DELETE Operations
 
-app.delete("/users/:id", (req: Request, res: Response) => {
-  const id = req.params.id as string;
-  users.users_list = users.users_list.filter((user) => user.id !== id);
-  res.status(204).send();
+app.delete("/users/:id", async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+
+    const result = await User.deleteOne({ _id: id });
+
+    if (result.deletedCount === 1) {
+      res.status(200).json({ message: "Successfully deleted user" });
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting user", error: err });
+  }
 });
 
 app.listen(PORT, () => {

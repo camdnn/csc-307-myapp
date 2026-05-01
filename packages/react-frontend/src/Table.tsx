@@ -1,5 +1,4 @@
 // src/Table.jsx
-import React from "react";
 
 // src/Table.jsx
 function TableHeader() {
@@ -15,7 +14,7 @@ function TableHeader() {
 }
 
 type Character = {
-  id: string;
+  _id: string;
   name: string;
   job: string;
 };
@@ -32,7 +31,7 @@ function TableBody(props: TableBodyProps) {
         <td>{row.name}</td>
         <td>{row.job}</td>
         <td>
-          <button onClick={() => props.removeCharacter(row.id)}>Delete</button>
+          <button onClick={() => props.removeCharacter(row._id)}>Delete</button>
         </td>
       </tr>
     );
